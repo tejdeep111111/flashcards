@@ -1,9 +1,12 @@
 package com.dbms.flashcards.model;
 
 import jakarta.persistence.*;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class Flashcard {
 
     @Id
@@ -24,11 +27,13 @@ public class Flashcard {
     private Topic topic;
 
     public Flashcard(String question, String answer, Difficulty diff, Topic topic) {
+        this.question = question;
+        this.answer = answer;
+        this.difficulty = diff;
+        this.topic = topic;
     }
 
-    public Flashcard() {};
+    public Flashcard() {}
 
     public enum Difficulty { EASY, MEDIUM, HARD }
-
-    // Getters & Setters
 }
