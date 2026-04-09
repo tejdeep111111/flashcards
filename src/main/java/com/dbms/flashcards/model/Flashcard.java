@@ -3,6 +3,9 @@ package com.dbms.flashcards.model;
 import jakarta.persistence.*;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class Flashcard {
 
     @Id
