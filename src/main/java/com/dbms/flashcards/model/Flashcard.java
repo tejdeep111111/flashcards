@@ -37,5 +37,4 @@ public class Flashcard {
 
     public enum Difficulty { EASY, MEDIUM, HARD }
 
-    // Getters & Setters
 }

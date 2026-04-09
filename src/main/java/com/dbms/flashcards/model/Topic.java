@@ -24,5 +24,4 @@ public class Topic {
     @JsonIgnore
     private List<Flashcard> flashcards;
 
-    // Getters & Setters
 }
