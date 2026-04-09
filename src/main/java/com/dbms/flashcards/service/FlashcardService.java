@@ -47,6 +47,9 @@ public class FlashcardService {
 
     // Called by GET /api/cards?topicId=&difficulty= (both params optional)
     public List<Flashcard> getCardsByTopicAndDifficulty(Long topicId, Flashcard.Difficulty difficulty) {
+        if (topicId == null && difficulty == null) return flashcardRepo.findAll();
+        if (topicId == null)   return flashcardRepo.findByDifficulty(difficulty);
+        if (difficulty == null) return flashcardRepo.findByTopicId(topicId);
         return flashcardRepo.findByTopicIdAndDifficulty(topicId, difficulty);
     }
 
