@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DBMS Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f12;--surface:#161920;--surface2:#1e2229;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#e8eaf0;--muted:#7a8090;--accent:#5b9cf6;--accent-dim:rgba(91,156,246,0.12);
+  --easy:#34d399;--easy-bg:rgba(52,211,153,0.12);
+  --medium:#fbbf24;--medium-bg:rgba(251,191,36,0.12);
+  --hard:#f87171;--hard-bg:rgba(248,113,113,0.12);
+  --r:12px;--rl:18px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:15px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit;text-decoration:none}
+
+/* Header */
+header{background:rgba(13,15,18,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.hdr{max-width:1100px;margin:0 auto;padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:500;letter-spacing:-.3px;cursor:pointer}
+.logo span{color:var(--accent)}
+nav{display:flex;gap:8px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:13.5px;font-weight:500;font-family:inherit;border:1px solid transparent;cursor:pointer;transition:all .15s;line-height:1}
+.btn-primary{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+.btn-primary:hover{background:#7ab3f8}
+.btn-outline{background:transparent;color:var(--text);border-color:var(--border2)}
+.btn-outline:hover{background:var(--surface2)}
+.btn-ghost{background:transparent;color:var(--muted);border-color:transparent}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-sm{padding:5px 12px;font-size:12.5px}
+.btn-lg{padding:11px 24px;font-size:15px;border-radius:var(--r)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Views */
+main{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:2rem 1.5rem 4rem}
+.view{display:none}.view.active{display:block}
+
+/* Loading / Error */
+.loader{text-align:center;padding:4rem;color:var(--muted)}
+.loader-spin{font-size:2rem;display:block;margin-bottom:1rem;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.api-error{background:var(--hard-bg);border:1px solid rgba(248,113,113,.3);color:var(--hard);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:14px;display:none}
+.api-error.show{display:block}
+
+/* Home */
+.hero{text-align:center;padding:5rem 1rem 3.5rem}
+.eyebrow{font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1.2rem}
+.hero h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:700;line-height:1.1;letter-spacing:-1.5px;margin-bottom:.9rem}
+.hero p{font-size:16px;color:var(--muted);margin-bottom:2.5rem}
+.hero p strong{color:var(--text)}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.sec-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:1rem}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.topic-card{display:flex;align-items:center;gap:12px;padding:1rem 1.1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .18s}
+.topic-card:hover{background:var(--surface2);border-color:var(--border2);transform:translateY(-2px)}
+.t-icon{font-size:22px;flex-shrink:0}.t-name{font-size:14px;font-weight:500;flex:1}.t-arr{color:var(--muted);font-size:13px}
+
+/* Filter bar */
+.filter-bar{display:flex;flex-wrap:wrap;gap:1.2rem;align-items:center;padding:1.2rem 0 1.5rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.fl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fl-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:13px;padding:5px 13px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s}
+.chip:hover,.chip.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.chip.easy{border-color:rgba(52,211,153,.3);color:var(--easy)}.chip.easy.active{background:var(--easy-bg)}
+.chip.medium{border-color:rgba(251,191,36,.3);color:var(--medium)}.chip.medium.active{background:var(--medium-bg)}
+.chip.hard{border-color:rgba(248,113,113,.3);color:var(--hard)}.chip.hard.active{background:var(--hard-bg)}
+.fl-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.count-label{font-size:13px;color:var(--muted)}
+
+/* Card grid */
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card-wrap{perspective:900px;height:230px;animation:cardIn .35s both}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);cursor:pointer;border-radius:var(--rl)}
+.card-wrap.flipped .card-inner{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--rl);border:1px solid var(--border);padding:1.25rem;display:flex;flex-direction:column}
+.card-front{background:var(--surface);justify-content:space-between}.card-front:hover{border-color:var(--border2)}
+.card-back{background:var(--surface2);transform:rotateY(180deg);justify-content:space-between}
+.card-meta{display:flex;justify-content:space-between;align-items:center}
+.card-topic-tag{font-size:12px;color:var(--muted)}
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:99px}
+.badge.easy{background:var(--easy-bg);color:var(--easy)}
+.badge.medium{background:var(--medium-bg);color:var(--medium)}
+.badge.hard{background:var(--hard-bg);color:var(--hard)}
+.card-q{font-size:15px;font-weight:500;line-height:1.45;flex:1;display:flex;align-items:center;margin:.75rem 0}
+.card-hint{font-size:12px;color:var(--muted);align-self:flex-end}
+.ans-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.4rem}
+.card-a{font-size:13.5px;line-height:1.55;flex:1;overflow-y:auto}
+.card-back-footer{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.btn-del{font-size:12px;color:var(--hard);background:none;border:none;cursor:pointer;font-family:inherit;opacity:.65;transition:opacity .15s}
+.btn-del:hover{opacity:1}
+
+/* Empty */
+.empty{text-align:center;padding:5rem 2rem;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:1rem}
+
+/* Add form */
+.form-wrap{display:flex;justify-content:center;padding-top:2.5rem}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:2rem 2.5rem;width:100%;max-width:540px}
+.form-card h2{font-size:20px;font-weight:600;margin-bottom:1.75rem;letter-spacing:-.3px}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:1.1rem}
+.fg label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fg input,.fg select,.fg textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;color:var(--text);resize:vertical;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent)}
+.fg select option{background:var(--surface2)}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:1.25rem}
+.save-status{font-size:13px;color:var(--easy);display:none;align-self:center}
+
+/* Study mode */
+.study-wrap{display:flex;flex-direction:column;align-items:center;padding:3rem 0}
+.study-progress{font-size:13px;color:var(--muted);margin-bottom:2rem}
+.study-progress strong{color:var(--text)}
+.study-card{perspective:900px;width:100%;max-width:580px;height:320px;cursor:pointer}
+.study-card .card-inner{border-radius:var(--rl)}
+.study-card .card-face{padding:2rem}
+.study-card .card-q{font-size:18px}
+.study-card .card-a{font-size:15px}
+.study-nav{display:flex;align-items:center;gap:1rem;margin-top:2rem}
+.study-nav button{font-size:22px;background:var(--surface);border:1px solid var(--border);border-radius:50%;width:44px;height:44px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.study-nav button:hover{background:var(--surface2);border-color:var(--border2)}
+.study-dots{display:flex;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:background .2s}
+.dot.done{background:var(--accent)}
+
+footer{text-align:center;padding:1.2rem;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+
+@media(max-width:600px){
+  .hero{padding:3rem 0 2rem}.hero h1{font-size:2rem}
+  .card-grid{grid-template-columns:1fr}.topic-grid{grid-template-columns:1fr 1fr}
+  .filter-bar{gap:.75rem}.fl-right{margin-left:0}
+  .form-card{padding:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr">
+    <div class="logo" onclick="showView('home')">⚡ DBMS<span>Cards</span></div>
+    <nav>
+      <button class="btn btn-ghost btn-sm" onclick="showView('browse')">Browse</button>
+      <button class="btn btn-ghost btn-sm" onclick="startStudy()">Study</button>
+      <button class="btn btn-primary btn-sm" onclick="showView('add')">+ Add Card</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <div id="view-home" class="view active">
+    <div class="hero">
+      <p class="eyebrow">Database Systems · Study Tool</p>
+      <h1>Master DBMS<br/>one card at a time.</h1>
+      <p id="hero-stats"><strong>—</strong> flashcards across <strong>—</strong> topics</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary btn-lg" onclick="showView('browse')">Browse Cards</button>
+        <button class="btn btn-outline btn-lg" onclick="startStudy()">🎯 Study Mode</button>
+      </div>
+    </div>
+    <p class="sec-label">Topics</p>
+    <div id="topic-grid-loader" class="loader"><span class="loader-spin">⟳</span>Loading topics...</div>
+    <div class="topic-grid" id="topic-grid" style="display:none"></div>
+  </div>
+
+  <!-- BROWSE -->
+  <div id="view-browse" class="view">
+    <div class="filter-bar">
+      <div class="fl">
+        <span class="fl-label">Topic</span>
+        <div class="chips" id="topic-chips"></div>
+      </div>
+      <div class="fl">
+        <span class="fl-label">Difficulty</span>
+        <div class="chips">
+          <span class="chip easy"   onclick="toggleDiff('EASY')"   id="chip-easy">Easy</span>
+          <span class="chip medium" onclick="toggleDiff('MEDIUM')" id="chip-medium">Medium</span>
+          <span class="chip hard"   onclick="toggleDiff('HARD')"   id="chip-hard">Hard</span>
+        </div>
+      </div>
+      <div class="fl-right">
+        <button class="btn btn-ghost btn-sm" onclick="loadCards(true)">🔀 Shuffle</button>
+        <span class="count-label" id="count-label">— cards</span>
+      </div>
+    </div>
+    <div class="api-error" id="browse-error"></div>
+    <div id="browse-loader" class="loader" style="display:none"><span class="loader-spin">⟳</span>Loading cards...</div>
+    <div class="card-grid" id="card-grid"></div>
+    <div class="empty" id="empty-state" style="display:none">
+      <div class="empty-icon">📭</div>
+      <p>No cards match this filter.</p>
+    </div>
+  </div>
+
+  <!-- STUDY -->
+  <div id="view-study" class="view">
+    <div class="study-wrap">
+      <p class="study-progress">Card <strong id="study-cur">1</strong> of <strong id="study-tot">—</strong></p>
+      <div class="study-card card-wrap" id="study-card" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <div class="card-meta">
+              <span class="card-topic-tag" id="study-topic"></span>
+              <span class="badge" id="study-badge"></span>
+            </div>
+            <p class="card-q" id="study-q"></p>
+            <span class="card-hint">tap to reveal →</span>
+          </div>
+          <div class="card-face card-back">
+            <span class="ans-label">Answer</span>
+            <p class="card-a" id="study-a"></p>
+            <div class="card-back-footer">
+              <span class="card-topic-tag" id="study-topic-back"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="study-nav">
+        <button onclick="studyNav(-1)">←</button>
+        <div class="study-dots" id="study-dots"></div>
+        <button onclick="studyNav(1)">→</button>
+      </div>
+      <button class="btn btn-ghost" style="margin-top:1.5rem" onclick="showView('browse')">← Back to browse</button>
+    </div>
+  </div>
+
+  <!-- ADD CARD -->
+  <div id="view-add" class="view">
+    <div class="form-wrap">
+      <div class="form-card">
+        <h2>Add a flashcard</h2>
+        <div class="api-error" id="add-error"></div>
+        <div class="fg">
+          <label>Topic</label>
+          <select id="f-topic"><option value="" disabled selected>Select a topic...</option></select>
+        </div>
+        <div class="fg">
+          <label>Difficulty</label>
+          <select id="f-diff">
+            <option value="EASY">Easy</option>
+            <option value="MEDIUM" selected>Medium</option>
+            <option value="HARD">Hard</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Question</label>
+          <textarea id="f-q" rows="3" placeholder="e.g. What is a clustered index?"></textarea>
+        </div>
+        <div class="fg">
+          <label>Answer</label>
+          <textarea id="f-a" rows="4" placeholder="Write a clear, concise answer..."></textarea>
+        </div>
+        <div class="form-actions">
+          <span class="save-status" id="save-status">✓ Saved!</span>
+          <button class="btn btn-ghost" onclick="showView('browse')">Cancel</button>
+          <button class="btn btn-primary" id="save-btn" onclick="addCard()">Save Card</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>Database Lab · Spring Boot + Thymeleaf + MySQL · <span id="api-status">connecting...</span></footer>
+
+<script>
+const API = 'http://localhost:8080/api';
+
+// ── State ──────────────────────────────────────────────────────────────
+let TOPICS      = [];
+let CARDS       = [];
+let filterTopic = null;
+let filterDiff  = null;
+let studyQueue  = [];
+let studyIdx    = 0;
+
+// ── API helpers ────────────────────────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+function showErr(elId, msg) {
+  const el = document.getElementById(elId);
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('show');
+}
+function hideErr(elId) {
+  document.getElementById(elId).classList.remove('show');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    TOPICS = await apiFetch('/topics');
+    document.getElementById('api-status').textContent = 'connected to Spring Boot ✓';
+    document.getElementById('api-status').style.color = 'var(--easy)';
+    renderHome();
+    renderTopicChips();
+    renderAddTopicSelect();
+  } catch(e) {
+    document.getElementById('api-status').textContent = 'cannot reach ' + API;
+    document.getElementById('api-status').style.color = 'var(--hard)';
+    showErr('browse-error', 'Cannot reach Spring Boot at ' + API + '. Is the server running?');
+  }
+}
+
+// ── Views ──────────────────────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (name === 'browse') loadCards(false);
+}
+
+// ── Home ───────────────────────────────────────────────────────────────
+async function renderHome() {
+  try {
+    const allCards = await apiFetch('/cards');
+    CARDS = allCards;
+    document.getElementById('hero-stats').innerHTML =
+      '<strong>' + allCards.length + '</strong> flashcards across <strong>' + TOPICS.length + '</strong> topics';
+
+    const grid = document.getElementById('topic-grid');
+    grid.innerHTML = TOPICS.map(t => {
+      const count = allCards.filter(c => c.topic && c.topic.id === t.id).length;
+      return `<div class="topic-card" onclick="filterByTopic(${t.id})">
+        <span class="t-icon">${t.icon}</span>
+        <span class="t-name">${t.name}</span>
+        <span class="t-arr">${count}</span>
+        <span class="t-arr">→</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById('topic-grid-loader').style.display = 'none';
+    grid.style.display = 'grid';
+  } catch(e) {
+    document.getElementById('topic-grid-loader').innerHTML = '<p style="color:var(--hard)">Could not load data.</p>';
+  }
+}
+
+function filterByTopic(id) {
+  filterTopic = id;
+  filterDiff  = null;
+  showView('browse');
+}
+
+// ── Browse ─────────────────────────────────────────────────────────────
+function renderTopicChips() {
+  const row = document.getElementById('topic-chips');
+  row.innerHTML =
+    `<span class="chip ${filterTopic == null ? 'active' : ''}" onclick="setTopic(null)">All</span>` +
+    TOPICS.map(t =>
+      `<span class="chip ${filterTopic === t.id ? 'active' : ''}" onclick="setTopic(${t.id})">${t.icon} ${t.name}</span>`
+    ).join('');
+}
+
+function setTopic(id) {
+  filterTopic = id;
+  renderTopicChips();
+  loadCards(false);
+}
+
+function toggleDiff(d) {
+  filterDiff = (filterDiff === d) ? null : d;
+  ['EASY', 'MEDIUM', 'HARD'].forEach(x =>
+    document.getElementById('chip-' + x.toLowerCase()).classList.toggle('active', filterDiff === x)
+  );
+  loadCards(false);
+}
+
+async function loadCards(shuffle) {
+  hideErr('browse-error');
+  document.getElementById('browse-loader').style.display = 'block';
+  document.getElementById('card-grid').innerHTML = '';
+  document.getElementById('empty-state').style.display = 'none';
+
+  try {
+    const params = new URLSearchParams();
+    if (filterTopic != null) params.set('topicId', filterTopic);
+    if (filterDiff  != null) params.set('difficulty', filterDiff);
+    if (shuffle)              params.set('shuffle', 'true');
+
+    const cards = await apiFetch('/cards?' + params.toString());
+    CARDS = cards;
+    renderCards(cards);
+  } catch(e) {
+    showErr('browse-error', 'Failed to load cards: ' + e.message);
+  } finally {
+    document.getElementById('browse-loader').style.display = 'none';
+  }
+}
+
+function renderCards(cards) {
+  const grid  = document.getElementById('card-grid');
+  const empty = document.getElementById('empty-state');
+  document.getElementById('count-label').textContent = cards.length + ' card' + (cards.length !== 1 ? 's' : '');
+
+  if (cards.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  grid.innerHTML = cards.map((c, i) => {
+    const tName = c.topic ? c.topic.icon + ' ' + c.topic.name : '';
+    const diff  = c.difficulty.toLowerCase();
+    return `<div class="card-wrap" style="animation-delay:${i * 50}ms">
+      <div class="card-inner" onclick="this.closest('.card-wrap').classList.toggle('flipped')">
+        <div class="card-face card-front">
+          <div class="card-meta">
+            <span class="card-topic-tag">${esc(tName)}</span>
+            <span class="badge ${diff}">${c.difficulty}</span>
+          </div>
+          <p class="card-q">${esc(c.question)}</p>
+          <span class="card-hint">tap to reveal →</span>
+        </div>
+        <div class="card-face card-back">
+          <span class="ans-label">Answer</span>
+          <p class="card-a">${esc(c.answer)}</p>
+          <div class="card-back-footer">
+            <span class="card-topic-tag">${c.topic ? esc(c.topic.name) : ''}</span>
+            <button class="btn-del" onclick="event.stopPropagation();deleteCard(${c.id},this)">delete</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteCard(id, btn) {
+  if (!confirm('Delete this card?')) return;
+  btn.textContent = '...';
+  btn.disabled = true;
+  try {
+    await apiFetch('/cards/' + id, { method: 'DELETE' });
+    loadCards(false);
+    renderHome();
+  } catch(e) {
+    btn.textContent = 'error';
+  }
+}
+
+// ── Study mode ─────────────────────────────────────────────────────────
+async function startStudy() {
+  showView('study');
+  try {
+    studyQueue = await apiFetch('/cards?shuffle=true');
+    studyIdx   = 0;
+    renderStudyCard();
+  } catch(e) {
+    document.getElementById('study-q').textContent = 'Could not load cards.';
+  }
+}
+
+function renderStudyCard() {
+  if (!studyQueue.length) return;
+  const c = studyQueue[studyIdx];
+  const tName = c.topic ? c.topic.icon + ' ' + c.topic.name : '';
+
+  document.getElementById('study-cur').textContent        = studyIdx + 1;
+  document.getElementById('study-tot').textContent        = studyQueue.length;
+  document.getElementById('study-q').textContent          = c.question;
+  document.getElementById('study-a').textContent          = c.answer;
+  document.getElementById('study-topic').textContent      = tName;
+  document.getElementById('study-topic-back').textContent = c.topic ? c.topic.name : '';
+
+  const badge = document.getElementById('study-badge');
+  badge.textContent = c.difficulty;
+  badge.className   = 'badge ' + c.difficulty.toLowerCase();
+
+  document.getElementById('study-card').classList.remove('flipped');
+
+  const show = Math.min(studyQueue.length, 12);
+  document.getElementById('study-dots').innerHTML =
+    Array.from({length: show}, (_, i) =>
+      `<div class="dot ${i < studyIdx ? 'done' : ''}"></div>`
+    ).join('');
+}
+
+function studyNav(dir) {
+  document.getElementById('study-card').classList.remove('flipped');
+  studyIdx = Math.max(0, Math.min(studyQueue.length - 1, studyIdx + dir));
+  renderStudyCard();
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('view-study').classList.contains('active')) return;
+  if (e.key === 'ArrowRight') studyNav(1);
+  if (e.key === 'ArrowLeft')  studyNav(-1);
+  if (e.key === ' ') { e.preventDefault(); document.getElementById('study-card').classList.toggle('flipped'); }
+});
+
+// ── Add card ───────────────────────────────────────────────────────────
+function renderAddTopicSelect() {
+  const sel = document.getElementById('f-topic');
+  sel.innerHTML = '<option value="" disabled selected>Select a topic...</option>' +
+    TOPICS.map(t => `<option value="${t.id}">${t.icon} ${t.name}</option>`).join('');
+}
+
+async function addCard() {
+  hideErr('add-error');
+  const topicId = document.getElementById('f-topic').value;
+  const diff    = document.getElementById('f-diff').value;
+  const q       = document.getElementById('f-q').value.trim();
+  const a       = document.getElementById('f-a').value.trim();
+
+  if (!topicId) { showErr('add-error', 'Please select a topic.'); return; }
+  if (!q)       { showErr('add-error', 'Please enter a question.'); return; }
+  if (!a)       { showErr('add-error', 'Please enter an answer.'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    await apiFetch('/cards', {
+      method: 'POST',
+      body: JSON.stringify({ topicId, difficulty: diff, question: q, answer: a })
+    });
+
+    document.getElementById('f-q').value = '';
+    document.getElementById('f-a').value = '';
+    document.getElementById('f-topic').value = '';
+
+    const status = document.getElementById('save-status');
+    status.style.display = 'inline';
+    setTimeout(() => status.style.display = 'none', 2000);
+
+    renderHome();
+  } catch(e) {
+    showErr('add-error', 'Failed to save: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Card';
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>
