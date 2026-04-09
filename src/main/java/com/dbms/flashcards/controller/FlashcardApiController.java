@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin   // allows the HTML file served by npx serve to call this
+@CrossOrigin(origins = "*")
 public class FlashcardApiController {
 
     private final FlashcardService service;
