@@ -1,6 +1,9 @@
 package com.dbms.flashcards.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -31,8 +34,6 @@ public class Flashcard {
         this.difficulty = difficulty;
         this.topic = topic;
     }
-
-    public Flashcard() {}
 
     public enum Difficulty { EASY, MEDIUM, HARD }
 
