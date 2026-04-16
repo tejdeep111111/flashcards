@@ -23,7 +23,6 @@ public class Topic {
 
     @JsonIgnore
     @OneToMany(mappedBy = "topic", fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<Flashcard> flashcards;
 
     // Getters & Setters
