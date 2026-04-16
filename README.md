@@ -18,7 +18,7 @@ Students preparing for DBMS exams often lack an interactive, self-paced way to r
 |---|---|
 | **Backend** | Java 17 · Spring Boot 3.5 · Spring Data JPA |
 | **Database** | MySQL (schema auto-managed by Hibernate) |
-| **Frontend** | Vanilla HTML 5 / CSS 3 / JavaScript (single-page app) |
+| **Frontend** | Vanilla HTML5 / CSS3 / JavaScript (single-page app) |
 | **Build tool** | Apache Maven |
 
 ---
