@@ -4,8 +4,10 @@ import com.dbms.flashcards.model.Flashcard;
 import com.dbms.flashcards.model.Flashcard.Difficulty;
 import com.dbms.flashcards.model.Topic;
 import com.dbms.flashcards.service.FlashcardService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -42,19 +44,57 @@ public class FlashcardApiController {
 
     @PostMapping("/cards")
     public ResponseEntity<Flashcard> addCard(@RequestBody Map<String, String> body) {
-        Long topicId     = Long.parseLong(body.get("topicId"));
-        Difficulty diff  = Difficulty.valueOf(body.get("difficulty"));
-        String question  = body.get("question");
-        String answer    = body.get("answer");
+        Long topicId = parseTopicId(body);
+        Difficulty diff = parseDifficulty(body);
+        String question = requireField(body, "question");
+        String answer = requireField(body, "answer");
 
         Topic topic = service.getTopicById(topicId);
-        Flashcard card  = new Flashcard(question, answer, diff, topic);
+        Flashcard card = new Flashcard(question, answer, diff, topic);
         return ResponseEntity.ok(service.saveCard(card));
+    }
+
+    @PutMapping("/cards/{id}")
+    public ResponseEntity<Flashcard> editCard(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        Long topicId = parseTopicId(body);
+        Difficulty diff = parseDifficulty(body);
+        String question = requireField(body, "question");
+        String answer = requireField(body, "answer");
+
+        Topic topic = service.getTopicById(topicId);
+        Flashcard card = new Flashcard(question, answer, diff, topic);
+        return ResponseEntity.ok(service.updateCard(id, card));
     }
 
     @DeleteMapping("/cards/{id}")
     public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
         service.deleteCard(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private String requireField(Map<String, String> body, String fieldName) {
+        String value = body.get(fieldName);
+        if (value == null || value.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " is required");
+        }
+        return value;
+    }
+
+    private Long parseTopicId(Map<String, String> body) {
+        String value = requireField(body, "topicId");
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid topicId");
+        }
+    }
+
+    private Difficulty parseDifficulty(Map<String, String> body) {
+        String value = requireField(body, "difficulty");
+        try {
+            return Difficulty.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid difficulty");
+        }
     }
 }
