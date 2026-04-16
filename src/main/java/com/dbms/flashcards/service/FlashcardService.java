@@ -63,6 +63,21 @@ public class FlashcardService {
         return flashcardRepo.save(card);
     }
 
+    // Called by PUT /api/cards/{id}
+    @Transactional
+    public Flashcard updateCard(Long id, Flashcard updatedCard) {
+        Flashcard existingCard = flashcardRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Flashcard not found: " + id));
+
+        existingCard.setQuestion(updatedCard.getQuestion());
+        existingCard.setAnswer(updatedCard.getAnswer());
+        existingCard.setDifficulty(updatedCard.getDifficulty());
+        existingCard.setTopic(updatedCard.getTopic());
+
+        return flashcardRepo.save(existingCard);
+    }
+
     // Called by DELETE /api/cards/{id}
     @Transactional
     public void deleteCard(Long id) {
